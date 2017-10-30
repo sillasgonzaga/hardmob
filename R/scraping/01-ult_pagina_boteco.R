@@ -61,5 +61,3 @@ df_topicos_bind %>%
 # salvar dataframe
 df_topicos_bind %>% write_rds("data/01-df_topicos.Rds")
 
-
-
