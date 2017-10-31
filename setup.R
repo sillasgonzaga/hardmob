@@ -67,13 +67,16 @@ extrair_dados_posts <- function(link_topico_hm){
   usuario_info <- ex %>% html_nodes(xpath = '//*[@class="userinfo"]') %>% html_text() %>% remover_publi()
   usuario_info <- usuario_info %>% str_replace_all("[\n]|[\r]|[\t]", "") %>% str_trim
   # usuario_info_registro
-  usuario_info_registro <- usuario_info #%>%
-    #str_extract("(Jan|Fev|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{4}") %>%
-    #as.yearmon() %>%
-    #as.Date()
   
-  # usuario mensagens
-  # remover pontos
+  # pensar depois em como fazer scraping quando tem post da moderação no meio
+  # ex: http://www.hardmob.com.br/boteco-hardmob/505056-isso-nao-piramide-mmn-274.html
+  # ex %>% html_nodes(xpath = '//*[@class="usertitle"]') %>% html_text() 
+  
+  usuario_info_registro <- usuario_info %>%
+    str_extract("(Jan|Fev|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{4}") #%>%
+  #  as.yearmon() %>%
+  #  as.Date()
+  
   usuario_info %<>% str_replace_all("\\.+", "")
   regex_msg <- "Mensagens\\s\\d+"
   regex_verdinhas <- "(Verdinhas\\d+)"
