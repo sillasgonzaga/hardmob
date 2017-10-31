@@ -70,10 +70,28 @@ extrair_dados_posts <- function(link_topico_hm){
   
   # pensar depois em como fazer scraping quando tem post da moderação no meio
   # ex: http://www.hardmob.com.br/boteco-hardmob/505056-isso-nao-piramide-mmn-274.html
-  # ex %>% html_nodes(xpath = '//*[@class="usertitle"]') %>% html_text() 
+  # ex2 : http://www.hardmob.com.br/boteco-hardmob/188244-oficialmob-piadas-277.html
+  usuario_tipo <- ex %>%
+    html_nodes(xpath = '//*[@class="usertitle"]') %>%
+    html_text() %>%
+    remove_spec_html_char() %>% 
+    str_replace_all("[\n]", "") %>% 
+    remover_publi()
+  
+  # substituir moderação por NA em usuario_tipo e empurrar o vetor
+  
+  ind_moderacao <- str_which(usuario_tipo, "Moderação")
+  qtd_posts <- length(usuario_tipo)
+  #if (length(ind_moderacao) > 1) stop("Tem mais de um post da moderação")
+  # loop para pegar topicos em que a moderação postou mais de uma vez
+  for (i in seq_len(length(ind_moderacao))) {
+    usuario_info <- append(usuario_info, NA, ind_moderacao[i] - 1)
+  }
+  
+  usuario_info <- usuario_info[1:qtd_posts]
   
   usuario_info_registro <- usuario_info %>%
-    str_extract("(Jan|Fev|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{4}") #%>%
+    str_extract("(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{4}") #%>%
   #  as.yearmon() %>%
   #  as.Date()
   
@@ -134,6 +152,8 @@ extrair_dados_posts <- function(link_topico_hm){
     post_verdinhas == "" ~ 0,
     TRUE ~ 1
   )
+  
+
   link_topico = rep(link_topico_hm, length(post_posicao))
   # montar dataframe final
   tibble(link_topico,
