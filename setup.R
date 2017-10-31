@@ -36,6 +36,7 @@ gerar_url_paginas <- function(link_topico){
 
 
 extrair_dados_posts <- function(link_topico_hm){
+  
   # link_topico_hm: url para uma pagina de um topico da hm
   ex <- link_topico_hm %>% read_html()
   
@@ -86,7 +87,7 @@ extrair_dados_posts <- function(link_topico_hm){
   # extrair post datetime
   post_datetime <- ex %>%
     html_nodes(xpath = '//*[@class="postdate old"]') %>%
-    html_text()# %>%    remove_spec_html_char() %>%     dmy_hm(tz = "Brazil/East")
+    html_text() %>%    remove_spec_html_char() #%>%     dmy_hm(tz = "Brazil/East")
   post_datetime <- post_datetime[ind_publi]
   
   # post_corpo
@@ -100,9 +101,16 @@ extrair_dados_posts <- function(link_topico_hm){
     map(str_subset, "Citando") %>% 
     map_if(~ length(.) == 0, NA_character_) %>%
     map_chr(1, .default = NA)
+  
+  
   # extrair o termo entre "Citando" e "\r"
   extrair_membro_citado <- function(x) str_match(x, "Citando (.*?)[\r]")[,2]
-  post_membro_citado <- extrair_membro_citado(post_citacao)
+  if(all(is.na(post_citacao))){
+    post_membro_citado <- post_citacao
+  } else{
+    post_membro_citado <- extrair_membro_citado(post_citacao)
+  }
+  
   # extrair o post original sem citação
   post_corpo_original <- post_corpo %>% map_chr(tail, 1) %>% remove_spec_html_char()
   
@@ -123,7 +131,7 @@ extrair_dados_posts <- function(link_topico_hm){
     post_verdinhas == "" ~ 0,
     TRUE ~ 1
   )
-  link_topico = rep(link_topico_hm, 25)
+  link_topico = rep(link_topico_hm, length(post_posicao))
   # montar dataframe final
   tibble(link_topico,
          post_posicao, usuario_nome, usuario_info_registro, usuario_info_mencionado,
