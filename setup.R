@@ -87,7 +87,7 @@ extrair_dados_posts <- function(link_topico_hm){
   
   # substituir moderação por NA em usuario_tipo e empurrar o vetor
 
-  ind_moderacao <- str_which(usuario_tipo, "Moderação|Colaborador")
+  ind_moderacao <- str_which(usuario_tipo, "Moderação|Colaborador|Administrador|Redação|Staff")
   qtd_posts <- length(usuario_tipo)
   #if (length(ind_moderacao) > 1) stop("Tem mais de um post da moderação")
   # loop para pegar topicos em que a moderação postou mais de uma vez
@@ -107,10 +107,10 @@ extrair_dados_posts <- function(link_topico_hm){
   regex_verdinhas <- "(Verdinhas\\d+)"
   regex_mencionado <- "(Mencionado\\s\\d+)"
   regex_citado <- "(Citado\\s\\d+)"
-  usuario_info_mensagens <- usuario_info %>% str_extract(regex_msg) %>% str_extract("\\d+")
-  usuario_info_verdinhas <- usuario_info %>% str_extract(regex_verdinhas) %>% str_extract("\\d+")
-  usuario_info_mencionado <- usuario_info %>% str_extract(regex_mencionado) %>% str_extract("\\d+")
-  usuario_info_citado <- usuario_info %>% str_extract(regex_citado) %>% str_extract("\\d+")
+  usuario_info_mensagens <- usuario_info %>% str_extract(regex_msg) %>% str_extract("\\d+") %>% as.numeric()
+  usuario_info_verdinhas <- usuario_info %>% str_extract(regex_verdinhas) %>% str_extract("\\d+") %>% as.numeric()
+  usuario_info_mencionado <- usuario_info %>% str_extract(regex_mencionado) %>% str_extract("\\d+") %>% as.numeric()
+  usuario_info_citado <- usuario_info %>% str_extract(regex_citado) %>% str_extract("\\d+") %>% as.numeric()
   
   # extrair post datetime
   post_datetime <- ex %>%
