@@ -67,10 +67,10 @@ extrair_dados_posts <- function(link_topico_hm){
   usuario_info <- ex %>% html_nodes(xpath = '//*[@class="userinfo"]') %>% html_text() %>% remover_publi()
   usuario_info <- usuario_info %>% str_replace_all("[\n]|[\r]|[\t]", "") %>% str_trim
   # usuario_info_registro
-  usuario_info_registro <- usuario_info %>%
-    str_extract("(Jan|Fev|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{4}") %>%
-    as.yearmon() %>%
-    as.Date()
+  usuario_info_registro <- usuario_info #%>%
+    #str_extract("(Jan|Fev|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{4}") %>%
+    #as.yearmon() %>%
+    #as.Date()
   
   # usuario mensagens
   # remover pontos
