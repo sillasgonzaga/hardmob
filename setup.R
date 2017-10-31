@@ -51,20 +51,27 @@ extrair_dados_posts <- function(link_topico_hm){
   post_posicao <- ex %>% html_nodes(".postcounter") %>% html_text()
   post_posicao <- str_replace_all(post_posicao, "#| ", "") %>% str_to_lower()
   # detectar existencia de publicdade
-  ind_publi <- post_posicao != "publicidade"
+  
+  ind_publi <- !str_detect(post_posicao, "publicidade|Publicidade")
   remover_publi <- function(x) x[ind_publi]
   post_posicao <- post_posicao[ind_publi]
   
   # usuario_nome
-  usuario_nome <- ex %>% html_nodes("a strong") %>% html_text()
+  usuario_nome <- ex %>% 
+    html_nodes(xpath = '//div[@class="popupmenu memberaction"]') %>%
+    html_children() %>%
+    html_attr("title") %>% 
+    # remover "está offline" ou "está online"
+    str_replace(" está.*", "")
   
   # usuario_url
   # impossivel ate o momento
   
   # usuario_registro
   #(usuario_url <- ex %>% html_nodes(".userinfo") %>% html_nodes("*"))
-  xpath_userinfo = '//*[@name="postbittab"]/div/dl/dd'
-  usuario_info <- ex %>% html_nodes(xpath = '//*[@class="userinfo"]') %>% html_text() %>% remover_publi()
+  usuario_info <- ex %>% html_nodes(xpath = '//*[@class="userinfo"]') %>% html_text()
+  
+  usuario_info %<>% remover_publi()
   usuario_info <- usuario_info %>% str_replace_all("[\n]|[\r]|[\t]", "") %>% str_trim
   # usuario_info_registro
   
@@ -79,8 +86,8 @@ extrair_dados_posts <- function(link_topico_hm){
     remover_publi()
   
   # substituir moderação por NA em usuario_tipo e empurrar o vetor
-  
-  ind_moderacao <- str_which(usuario_tipo, "Moderação")
+
+  ind_moderacao <- str_which(usuario_tipo, "Moderação|Colaborador")
   qtd_posts <- length(usuario_tipo)
   #if (length(ind_moderacao) > 1) stop("Tem mais de um post da moderação")
   # loop para pegar topicos em que a moderação postou mais de uma vez

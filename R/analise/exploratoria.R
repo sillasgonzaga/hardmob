@@ -4,6 +4,7 @@ source("setup.R")
 df <- read_rds("data/03-posts.Rds")
 glimpse(df)
 # limpar dados
+df$usuario_info_verdinhas %<>% as.numeric()
 df$post_datetime %<>% remove_spec_html_char()
 df$post_corpo_original %<>% remove_spec_html_char()
 
@@ -21,8 +22,6 @@ df$post_datetime <- dt
 # Consertar Sodoma
 df$usuario_nome %<>% str_replace_all("&amp;", "&")
 df$post_membro_citado %<>% str_replace_all("&amp;", "&")
-
-
 
 # extrair dataframe de usuarios
 df_usuarios <- df %>% select(starts_with("usuario"))
