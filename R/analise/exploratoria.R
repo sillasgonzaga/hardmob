@@ -1,66 +1,78 @@
 source("setup.R")
 
+df <- read_rds("data/analise-dados-limpos-posts.Rds")
+df_usuarios <- read_rds("data/analise-dados-limpos-usuarios.Rds")
 
-df <- read_rds("data/03-posts.Rds")
-glimpse(df)
-# limpar dados
-df$usuario_info_verdinhas %<>% as.numeric()
-df$post_datetime %<>% remove_spec_html_char()
-df$post_corpo_original %<>% remove_spec_html_char()
+theme_538 <- function(){
+  theme_fivethirtyeight() +
+    theme(axis.title = element_text())
+}
 
-df$post_datetime %<>% str_replace_all("[\n]", "")  
-
-# corrigir datetime
-dt <- df$post_datetime
-
-# corrigir ontem e hoje por data certa
-dt %<>% str_replace_all("Ontem", "29-10-2017")
-dt %<>% str_replace_all("Hoje", "30-10-2017")
-# converter para datetime
-dt %<>% dmy_hm()
-df$post_datetime <- dt
-# Consertar Sodoma
-df$usuario_nome %<>% str_replace_all("&amp;", "&")
-df$post_membro_citado %<>% str_replace_all("&amp;", "&")
-
-# extrair dataframe de usuarios
-df_usuarios <- df %>% select(starts_with("usuario"))
-# remover duplicatas
-df_usuarios %<>%
-  group_by_all() %>%
-  summarise(n = n())
-
-df_usuarios %<>%
-  group_by(usuario_nome) %>% 
-  arrange(desc(n)) %>% 
-  filter(row_number() == 1) %>% 
-  ungroup()
-
-df_usuarios$usuario_info_verdinhas %<>% as.numeric()
+## Panorama geral sobre a Hardmob: quantos dados foram coletados
+n_topicos <- 96
+n_paginas <- length(unique(df$link_topico))
+n_posts <- nrow(df)
+n_usuarios <- length(unique(df$usuario_nome))
+glue("Foram coletados dados de {x1} tópicos diferentes, totalizando {x2} páginas, {x3} posts e {x4} usuários",
+     x1 = n_topicos, x2 = n_paginas, x3 = n_posts, x4 = n_usuarios)
 
 # grafico de registros de usuario por mes
 df_usuarios %>% 
   filter(!is.na(usuario_info_registro)) %>% 
-  mutate(data = floor_date(usuario_info_registro, "month")) %>% 
+  mutate(data = floor_date(usuario_info_registro, "quarter")) %>% 
   count(data) %>% 
-  ggplot(aes(x = data, y = nn)) +
-  geom_line() + 
-  scale_x_date(date_breaks = "1 year", date_labels = "%y")
-
+  ggplot(aes(x = data, y = n)) +
+    geom_line() + geom_smooth() +
+    scale_x_date(date_breaks = "2 year", date_labels = "%Y") + 
+    labs(x = NULL, y= NULL,
+         title = "Novos membros ativos na Hardmob por trimestre") + 
+    theme_fivethirtyeight(12)
 
 
 # histograma de verdinhas
 ggplot(df_usuarios, aes(x = usuario_info_verdinhas)) +
   geom_histogram()
 
+# distribuicao acumulada de verdinhas
+ggplot(df_usuarios, aes(x = usuario_info_verdinhas)) +
+  stat_ecdf(pad = FALSE) +
+  scale_y_continuous(breaks = seq(0, 1, 0.05)) +
+  geom_hline(yintercept = 0.95, alpha = 0.5, linetype = "dotted", color = "red") +
+  theme_538() +
+  labs(y = "Proporção de usuários", x = "Verdinhas recebidas",
+    title = "Distribuição acumulada de verdinhas na Hardmob")
+
+# o 5% mais esverdeado contem quantos % de verdinhas?
+top5 <- df_usuarios %>% arrange(desc(usuario_info_verdinhas)) %>% head(0.05 * nrow(df_usuarios))
+round(100 * sum(top5$usuario_info_verdinhas)/sum(df_usuarios$usuario_info_verdinhas), 1)
 
 # grafico de mensagens por dia
+df %>% 
+  count(ano = year(post_datetime), data = as.Date(post_datetime)) %>% 
+  ggplot(aes(y = n, x = as.factor(ano))) + 
+    geom_jitter() + 
+    scale_y_continuous(breaks = seq(0, 500, 50))
+
+df
+
 df %>% 
   mutate(data = as.Date(post_datetime) %>% floor_date("month")) %>% 
   filter(!is.na(data)) %>% 
   count(data) %>% 
   ggplot(aes(x = data, y = n)) +
-  geom_line()
+  geom_line() + 
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y")
+
+# sazonalidade
+df %>% 
+  group_by(as.Date(post_datetime), mes = weekdays(post_datetime)) %>% 
+  summarise(n = n()) %>% 
+  ungroup() %>% 
+  #mutate(mes = factor(mes, 1:12)) %>% 
+  #filter(n < 100) %>% 
+  ggplot(aes(x = mes, y = n)) + 
+    geom_boxplot()
+
 
 # interacoes mais comuns
 network <- df %>% 

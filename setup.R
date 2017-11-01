@@ -5,6 +5,9 @@ library(stringr)
 library(lubridate)
 library(glue)
 library(zoo)
+library(ggthemes)
+devtools::source_gist("ae62d57836c37ebff4a5f7a8dc32eeb7", filename = "meu_tema.R")
+
 
 remove_spec_html_char <- function(x){
   str_replace_all(x, "[\r]|[\t]", "")
