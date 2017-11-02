@@ -6,6 +6,18 @@ library(lubridate)
 library(glue)
 library(zoo)
 library(ggthemes)
+library(wordcloud)
+library(tm)
+library(viridis)
+library(tidytext)
+library(abjutils)
+library(ggrepel)
+library(lexiconPT)
+library(tidytext)
+library(ggraph)
+library(igraph)
+library(qdap)
+
 devtools::source_gist("ae62d57836c37ebff4a5f7a8dc32eeb7", filename = "meu_tema.R")
 
 
@@ -172,3 +184,17 @@ extrair_dados_posts <- function(link_topico_hm){
          post_corpo_original, post_verdinhas, post_membro_citado
   ) 
 }
+
+extrair_topico_id <- function(hardmob_url){
+  hardmob_url %>% 
+    str_replace_all("http://www.hardmob.com.br/boteco-hardmob/", "") %>% 
+    str_replace_all("-.*", "")
+}
+
+a <- "http://www.hardmob.com.br/boteco-hardmob/505056-isso-nao-piramide-mmn-245.html"
+
+a %>% 
+  str_replace_all("http://www.hardmob.com.br/boteco-hardmob/", "") %>% 
+  str_replace_all("-.*", "")
+
+
